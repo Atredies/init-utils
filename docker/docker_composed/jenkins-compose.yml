@@ -1,0 +1,43 @@
+# Quick Docker Composed Jenkins instance - Will have to run through wizard
+
+# This container also requires to add certificate to ~/jenkins/certs, to get initial password and run through wizard
+# Also ufw allow 443 - Or different firewall if you are using one
+version: '3.3'
+services:
+  jenkins:
+    image: "jenkins/jenkins:lts"
+    user: root
+    expose:
+      - 8080
+    ports:
+      - 50000:50000
+    container_name: jenkins-01
+    volumes:
+      - ./jenkins/jenkins_data/:/var/jenkins_home  # Update ./ with location you need volumes mapped at
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    networks:
+      - jenkins_nw
+    restart: unless-stopped
+  nginx:
+    image: "nginx:latest"
+    links:
+      - "jenkins"
+      - "jenkins:jenkinssvc"
+    ports:
+      - "80:80"
+      - "443:443"
+    container_name: jenkins-nginx
+    volumes:
+      - ./jenkins/certs:/etc/ssl                   # Update ./ with location you need volumes mapped at
+      - ./jenkins/nginx/conf.d:/etc/nginx/conf.d   # Update ./ with location you need volumes mapped at
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - jenkins_nw
+    depends_on:
+      - jenkins
+    restart: unless-stopped
+ 
+networks:
+  jenkins_nw:
+    driver: bridge

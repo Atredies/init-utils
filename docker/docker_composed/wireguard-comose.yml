@@ -1,0 +1,29 @@
+# Quick Wireguard instance to be run via docker composed
+# Credit: https://docs.linuxserver.io/
+
+version: "2.1"
+services:
+  wireguard:
+    image: ghcr.io/linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Athens
+      - SERVERURL=wireguard.domain.com #optional
+      - SERVERPORT=16698 #optional
+      - PEERS=2 #optional
+      - PEERDNS=auto #optional
+      - INTERNAL_SUBNET=10.10.0.0 #optional
+      - ALLOWEDIPS=0.0.0.0/0 #optional
+    volumes:
+      - ./apps/vpn/wireguard/config:/config            # Update ./apps with location you want to map volumes
+      - ./apps/vpn/wireguard/lib/modules:/lib/modules  # Update ./apps with location you want to map volumes
+    ports:
+      - 16698:16698/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
