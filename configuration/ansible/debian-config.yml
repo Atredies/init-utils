@@ -1,0 +1,9 @@
+
+- name: Configure Linux System
+  hosts: all
+
+  remote_user: ANSIBLE_USER_HERE
+  become: yes
+
+  roles:
+    - debian

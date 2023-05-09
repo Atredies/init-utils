@@ -1,0 +1,8 @@
+[initial_config]
+# Initial config servers here
+
+[debian]
+# Debian Servers here
+
+[rhel]
+# RHEL Servers here

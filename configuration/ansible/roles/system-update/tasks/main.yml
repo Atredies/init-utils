@@ -1,0 +1,13 @@
+# Updates Debian Based Systems
+- name: Update Debian based Linux
+  apt:
+    update_cache: yes
+    upgrade: 'yes'
+  tags: upgrade
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+# Updates RHEL Based Systems
+- name: Update RHEL based Linux
+  dnf: name=* state=latest
+  tags: upgrade
+  when: ansible_distribution == 'AlmaLinux'

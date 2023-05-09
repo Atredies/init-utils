@@ -1,0 +1,239 @@
+###############################################
+#               SERVER MAINTAINANCE           #
+###############################################
+
+# Upgrade Server Packages:
+- name: Upgrade Debian based Linux
+  apt:
+    update_cache: yes
+    upgrade: 'dist'
+
+# Install Required Packages:
+- name: Install required Packages - Debian
+  apt:
+    state: latest
+    name:
+      - sudo
+      - unattended-upgrades
+      - apt-listchanges
+      - vim
+      - qemu-guest-agent
+      - curl
+      - wget
+      - ufw
+      - fail2ban
+      - acl
+      - net-tools
+
+# Install Docker:
+- name: Install Docker Dependency
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg-agent
+    - software-properties-common
+
+# Add GPG Key:
+- name: Add GPG Key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+# Add apt Repository:
+- name: Add Docker Repository to apt
+  apt_repository:
+    repo: deb https://download.docker.com/linux/debian bullseye stable
+    state: present
+    
+# Install Docker & docker-cli and conteiner.io:
+- name: Install Docker
+  apt:
+    name: "{{item}}"
+    state: latest
+    update_cache: yes
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+# Start & Enable Docker Service:
+- name: Start & Enable Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+# Configure Correct Date & Time:
+- name: set timezone to Europe/Bucharest
+  timezone:
+    name: Europe/Bucharest
+
+# Configure Firewall to allow only SSH Access:
+- name: UFW - Allow SSH
+  ufw: 
+    rule: allow 
+    name: OpenSSH
+
+- name: UFW - Deny all other incoming traffic
+  ufw: 
+    state: enabled 
+    policy: deny
+    direction: incoming
+
+# Configure Fail2Ban:
+- name: Copy over the fail2ban config
+  src: jail.conf
+  dest: /etc/fail2ban/jail.local
+
+# Restart Fail2ban: 
+- name: Restart Fail2Ban
+  systemd:
+    name: fail2ban.service
+    state: restarted
+
+###############################################
+#               USERS & GROUPS                #
+###############################################
+
+# Group Creation:
+# Create Groups required for the system:
+- name: Create Groups for System
+  group: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ADMIN_USER_HERE
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+
+# User Creation:
+# Create Users required for the system:
+- name: Create Required Users
+  user:
+    name: "{{ item }}"
+    state: present
+    groups: "{{ item }}"
+    shell: /bin/bash
+  with_items:
+    - ADMIN_USER_HERE
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+
+# Prompt for user Password:
+- name: Change Password
+  user:
+    name: "{{ item }}"
+    update_password: always
+    password: "{{ user_password|password_hash('sha512') }}"
+  with_items:
+    - ADMIN_USER_HERE
+
+# Lock system user Password:
+- name: Lock system user Password
+  user:
+    name: "{{ item }}"
+    password_lock: yes
+  with_items:
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+    - root
+
+# Add Users to sudo group:
+- name: Add Users to sudo group
+  user:
+    name: "{{ item }}"
+    groups: sudo
+    append: yes
+  with_items:
+    - ANSIBLE_USER_HERE
+    - ADMIN_USER_HERE
+
+# Add Users to docker group:
+- name: Add Users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  with_items:
+    - ADMIN_USER_HERE
+
+###############################################
+#               SSH ACCESS                    #
+###############################################
+
+# Copy Authorized Keys file over to server:
+
+# Create SSH Key directory:
+- name: Create SSH Key directory for SSH_USER_HERE
+  file:
+    path: /home/SSH_USER_HERE/.ssh
+    state: directory
+    mode: 0700
+    owner: SSH_USER_HERE
+    group: SSH_USER_HERE
+
+- name: Create SSH Key directory for ANSIBLE_USER_HERE
+  file:
+    path: /home/ANSIBLE_USER_HERE/.ssh
+    state: directory
+    mode: 0700
+    owner: ANSIBLE_USER_HERE
+    group: ANSIBLE_USER_HERE
+
+# Create SSH Key file:
+- name: Create authorized_keys file for SSH_USER_HERE
+  file:
+    path: /home/SSH_USER_HERE/.ssh/authorized_keys
+    mode: 0600
+    state: touch
+    owner: SSH_USER_HERE
+    group: SSH_USER_HERE
+
+- name: Create authorized_keys file for ANSIBLE_USER_HERE
+  file:
+    path: /home/ANSIBLE_USER_HERE/.ssh/authorized_keys
+    mode: 0600
+    state: touch
+    owner: ANSIBLE_USER_HERE
+    group: ANSIBLE_USER_HERE
+
+  
+# Copy authorized_keys:
+- name: Copy over the authorized_keys config for USER
+  copy:
+    src: authorized_keys_user.conf
+    dest: /home/SSH_USER_HERE/.ssh/authorized_keys
+
+- name: Copy over the authorized_keys config for ANSIBLE
+  copy:
+    src: authorized_keys_ansible.conf
+    dest: /home/ANSIBLE_USER_HERE/.ssh/authorized_keys          
+
+# Copy SSHD config:
+- name: Copy over the SSHD config
+  copy:
+    src: sshd.conf
+    dest: /etc/ssh/sshd_config
+
+# Copy sudo config:
+- name: Copy over the sudoers config
+  copy:
+    src: sudo.conf
+    dest: /etc/sudoers
+
+# Restart SSHD: 
+- name: Restart SSHD
+  systemd:
+    name: sshd.service
+    state: restarted
+
+# Copy bashrc conf to SSH_USER_HERE user
+- name: Copy over the timezone config
+  copy:
+    src: bashrc.conf
+    dest: dest=/home/SSH_USER_HERE/.bashrc

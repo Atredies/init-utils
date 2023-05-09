@@ -1,0 +1,233 @@
+###############################################
+#               SERVER MAINTAINANCE           #
+###############################################
+
+# Upgrade Server Packages:
+- name: Update RHEL based Linux
+  dnf: name=* state=latest
+
+- name: Install EPEL on RHEL Linux
+  dnf:
+    state: latest
+    name: epel-release
+
+# Install Required Packages:
+- name: Install required Packages - RHEL
+  dnf:
+    state: latest
+    name:
+      - sudo
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+      - vim
+      - qemu-guest-agent
+      - curl
+      - wget
+      - fail2ban
+      - fail2ban-systemd
+      - acl
+      - net-tools
+      - redhat-lsb-core
+
+# Add Docker Repo:
+- name: Add Docker Repository to dnf
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+    
+- name: Install Docker Edge & Test Repository
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: "{{ item }}"
+    option: enabled
+    value: 0
+  with_items: ['docker-ce-test', 'docker-ce-edge']
+
+# Install Docker: 
+- name: Install Docker
+  dnf:
+    name: docker-ce
+    state: latest
+
+# Start & Enable Docker Service:
+- name: Start & Enable Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+# Configure Correct Date & Time:
+- name: set timezone to Europe/Bucharest
+  timezone:
+    name: Europe/Bucharest
+
+# Enable FirewallD
+- name: Restart FirewallD
+  systemd:
+    name: firewalld.service
+    state: restarted
+
+# Configure FirewallD to allow only SSH Access:
+- name: FirewallD - Allow SSH
+  firewalld: 
+    permanent: yes
+    immediate: yes
+    service: "{{ item }}"
+    state: enabled
+  with_items:
+    - ssh
+
+# Configure Fail2Ban:
+- name: Copy over the fail2ban config
+  copy:
+    src: jail.conf
+    dest: /etc/fail2ban/jail.local
+
+# Restart Fail2ban: 
+- name: Restart Fail2Ban
+  systemd:
+    name: fail2ban.service
+    state: restarted
+
+###############################################
+#               USERS & GROUPS                #
+###############################################
+
+# Group Creation:
+# Create Groups required for the system:
+- name: Create Groups for System
+  group: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ADMIN_USER_HERE
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+
+# User Creation:
+# Create Users required for the system:
+- name: Create Required Users
+  user:
+    name: "{{ item }}"
+    state: present
+    groups: "{{ item }}"
+    shell: /bin/bash
+  with_items:
+    - ADMIN_USER_HERE
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+
+# Prompt for user Password:
+- name: Change Password
+  user:
+    name: "{{ item }}"
+    update_password: always
+    password: "{{ user_password|password_hash('sha512') }}"
+  with_items:
+    - ADMIN_USER_HERE
+
+# Lock system user Password:
+- name: Lock system user Password
+  user:
+    name: "{{ item }}"
+    password_lock: yes
+  with_items:
+    - SSH_USER_HERE
+    - ANSIBLE_USER_HERE
+    - root
+
+# Add Users to sudo group:
+- name: Add Users to wheel group
+  user:
+    name: "{{ item }}"
+    groups: wheel
+    append: yes
+  with_items:
+    - ANSIBLE_USER_HERE
+    - ADMIN_USER_HERE
+
+# Add Users to docker group:
+- name: Add Users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  with_items:
+    - ADMIN_USER_HERE
+
+###############################################
+#               SSH ACCESS                    #
+###############################################
+
+# Copy Authorized Keys file over to server:
+# Create SSH Key directory:
+- name: Create SSH Key directory for SSH_USER_HERE
+  file:
+    path: /home/SSH_USER_HERE/.ssh
+    state: directory
+    mode: 0700
+    owner: SSH_USER_HERE
+    group: SSH_USER_HERE
+
+- name: Create SSH Key directory for ANSIBLE_USER_HERE
+  file:
+    path: /home/ANSIBLE_USER_HERE/.ssh
+    state: directory
+    mode: 0700
+    owner: ANSIBLE_USER_HERE
+    group: ANSIBLE_USER_HERE
+
+# Create SSH Key file:
+- name: Create authorized_keys file for SSH_USER_HERE
+  file:
+    path: /home/SSH_USER_HERE/.ssh/authorized_keys
+    mode: 0600
+    state: touch
+    owner: SSH_USER_HERE
+    group: SSH_USER_HERE
+
+- name: Create authorized_keys file for ANSIBLE_USER_HERE
+  file:
+    path: /home/ANSIBLE_USER_HERE/.ssh/authorized_keys
+    mode: 0600
+    state: touch
+    owner: ANSIBLE_USER_HERE
+    group: ANSIBLE_USER_HERE
+
+# Copy bashrc conf to SSH_USER_HERE user
+- name: Copy over the bashrc config
+  copy: 
+    src: bashrc.conf
+    dest: /home/SSH_USER_HERE/.bashrc
+    force: yes 
+
+# Copy bashrc conf to ADMIN_USER_HERE user
+- name: Copy over the bashrc config
+  copy: 
+    src: bashrc2.conf
+    dest: /home/ADMIN_USER_HERE/.bashrc
+    force: yes 
+
+# Copy authorized_keys:
+- name: Copy over the authorized_keys config for USER
+  copy:
+    src: authorized_keys_user.conf
+    dest: /home/SSH_USER_HERE/.ssh/authorized_keys
+
+- name: Copy over the authorized_keys config for ANSIBLE
+  copy:
+    src: authorized_keys_ansible.conf
+    dest: /home/ANSIBLE_USER_HERE/.ssh/authorized_keys          
+
+# Copy SSHD config:
+- name: Copy over the SSHD config
+  copy:
+    src: sshd.conf
+    dest: /etc/ssh/sshd_config
+
+# Copy sudo config:
+- name: Copy over the sudoers config
+  copy:
+    src: sudo.conf
+    dest: /etc/sudoers

@@ -1,0 +1,8 @@
+- name: Maintain Systems
+  hosts: debian:rhel
+
+  remote_user: ANSIBLE_USER_HERE
+  become: yes
+
+  roles:
+    - system-update

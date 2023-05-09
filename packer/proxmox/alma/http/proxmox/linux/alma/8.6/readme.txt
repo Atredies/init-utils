@@ -1,0 +1,1 @@
+Here comes auto generated kickstart file (see scripts/prep-kickstart-proxmox-iso.sh)

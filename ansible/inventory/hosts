@@ -1,5 +1,0 @@
-# initial_config where you should insert the servers that run the playbook: initial_server_config.yml
-[initial_config]
-
-# debian sections is for servers running debian in playbook system_update.yml
-[debian]
