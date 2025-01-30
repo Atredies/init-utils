@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BACKUP_DIR="/home/medstack/sql-backups"
+BACKUP_DIR="$HOME/sql-backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 PG_USER="postgres"
 
