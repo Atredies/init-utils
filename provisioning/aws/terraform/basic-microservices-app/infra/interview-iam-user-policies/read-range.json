@@ -1,0 +1,32 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstanceAttribute",
+                "ec2:DescribeInstanceCreditSpecifications",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeKeyPairs",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeVpcClassicLink",
+                "ec2:DescribeVpcClassicLinkDnsSupport",
+                "ec2:DescribeVpcs",
+                "ecr:GetAuthorizationToken",
+                "iam:PassRole",
+                "ssm:DescribeParameters",
+                "sts:GetCallerIdentity"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

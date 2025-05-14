@@ -1,0 +1,5 @@
+# Docker image with python, make
+# terraform, aws-cli
+# See https://github.com/techops-recruiting-systems/docker-infra-interview-dojo
+DOJO_DOCKER_IMAGE="joii/infra-joi-dojo:0.9.0"
+

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Newsfeed</h1>
+<div class="row">
+  <div class="col-md-8 newsfeed">
+    <ol class="list-unstyled">
+        {% for item in news %}
+        <li>
+          <time datetime="{{ item.date }}" class="text-muted pull-right">{{ item.date.strftime("%c") }}</time>
+          <h3><a href="{{ item.link }}">{{ item.title }}</a></h3>
+          <cite>
+            {{ item.authors | map(attribute='name') | join(', ')}} for
+            <a href="{{ item.source.link }}">{{ item.source.title }}</a>
+          </cite>
+        </li>
+        {% endfor %}
+    </ol>
+  </div>
+  <div class="col-md-4">
+    <blockquote>
+      <p>{{ quote.quote | replace("\n", "<br>") | safe }}</p>
+      <footer>{{ quote.author }}</footer>
+    </cite>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:GetRole",
+                "iam:ListRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:ListInstanceProfilesForRole",
+                "iam:DeleteRole",
+                "iam:CreateInstanceProfile",
+                "iam:GetInstanceProfile",
+                "iam:AddRoleToInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile",
+                "iam:DeleteInstanceProfile",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": [
+                "arn:aws:iam::<account_id>:role/news4321-news_host",
+                "arn:aws:iam::<account_id>:instance-profile/news4321-news_host"
+            ]
+        }
+    ]
+}

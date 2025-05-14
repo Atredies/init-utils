@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:DeleteParameter",
+                "ssm:ListTagsForResource"
+            ],
+            "Resource": [
+                "arn:aws:ssm:*:<account_id>:parameter/news4321/base/ecr",
+                "arn:aws:ssm:*:<account_id>:parameter/news4321/base/vpc_id",
+                "arn:aws:ssm:*:<account_id>:parameter/news4321/base/subnet/a/id",
+                "arn:aws:ssm:*:<account_id>:parameter/news4321/base/subnet/b/id"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:CreateTable",
+                "dynamodb:DeleteItem",
+                "dynamodb:DeleteTable",
+                "dynamodb:DescribeContinuousBackups",
+                "dynamodb:DescribeTable",
+                "dynamodb:DescribeTimeToLive",
+                "dynamodb:GetItem",
+                "dynamodb:ListTagsOfResource",
+                "dynamodb:PutItem",
+                "dynamodb:TagResource"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:*:<account_id>:table/news4321-terraform-locks"
+            ]
+        }
+    ]
+}

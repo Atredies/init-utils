@@ -1,0 +1,30 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:DescribeRepositories",
+                "ecr:ListTagsForResource",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:DescribeImages",
+                "ecr:BatchGetImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",
+                "ecr:PutImage",
+                "ecr:DeleteRepository"
+            ],
+            "Resource": [
+                "arn:aws:ecr:*:<account_id>:repository/news4321-quotes",
+                "arn:aws:ecr:*:<account_id>:repository/news4321-newsfeed",
+                "arn:aws:ecr:*:<account_id>:repository/news4321-front_end"
+            ]
+        }
+    ]
+}
